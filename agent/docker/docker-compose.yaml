@@ -21,8 +21,8 @@ services:
     environment:
       MQTT_BROKER_HOST: "mqtt"
       MQTT_BROKER_PORT: 1883
-      MQTT_TOPIC_AGGREGATED: "agent_data_aggregated"
-      MQTT_TOPIC_PARKING: "agent_data_parking"
+      MQTT_TOPIC: "agent_data_topic"
+      MQTT_TOPIC_PARKING: "parking_topic"
       DELAY: 0.1
     networks:
       mqtt_network:

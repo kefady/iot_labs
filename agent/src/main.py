@@ -57,7 +57,7 @@ def run():
     )
 
     # Infinity publish data
-    publish(client, config.MQTT_TOPIC_AGGREGATED, config.MQTT_TOPIC_PARKING, datasource, config.DELAY)
+    publish(client, config.MQTT_TOPIC, config.MQTT_TOPIC_PARKING, datasource, config.DELAY)
 
 
 if __name__ == '__main__':
