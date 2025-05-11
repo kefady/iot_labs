@@ -1,4 +1,5 @@
 import csv
+import random
 from datetime import datetime
 from typing import Optional, TextIO
 
@@ -56,7 +57,8 @@ class FileDatasource:
         )
 
         return {
-            'aggregated': AggregatedData(accelerometer=acc_data, gps=gps_data, time=datetime.now()),
+            'aggregated': AggregatedData(user_id=random.randint(0, 1000), accelerometer=acc_data, gps=gps_data,
+                                         timestamp=datetime.now()),
             'parking': park_data,
         }
 
