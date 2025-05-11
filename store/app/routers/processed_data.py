@@ -4,7 +4,7 @@ from app.models.schemas import ProcessedAgentData, ProcessedAgentDataInDB
 from app.crud import processed_data as crud
 from app.services.websocket_manager import send_data_to_subscribers
 
-router = APIRouter(prefix="/processed_agent_data", tags=["Processed Agent Data"])
+router = APIRouter(tags=["Processed Agent Data"])
 
 @router.post(
     "/",
@@ -16,11 +16,9 @@ router = APIRouter(prefix="/processed_agent_data", tags=["Processed Agent Data"]
     """
 )
 async def create_data(data: List[ProcessedAgentData]):
-    created = []
-    for item in data:
-        result = crud.create_data(item)
-        await send_data_to_subscribers(item.agent_data.user_id, result)
-        created.append(result)
+    created = crud.create_data_batch(data)
+    for item in created:
+        await send_data_to_subscribers(item["user_id"], item)
     return created
 
 @router.get(

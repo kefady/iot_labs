@@ -1,3 +1,5 @@
+from typing import List
+
 from sqlalchemy.sql import select
 from app.models.database import SessionLocal
 from app.models.db_models import processed_agent_data
@@ -22,6 +24,30 @@ def create_data(item: ProcessedAgentData):
         return new_row
     finally:
         db.close()
+
+def create_data_batch(items: List[ProcessedAgentData]):
+    db = SessionLocal()
+    try:
+        new_rows = []
+        for item in items:
+            new_rows.append({
+                "road_state": item.road_state,
+                "user_id": item.agent_data.user_id,
+                "x": item.agent_data.accelerometer.x,
+                "y": item.agent_data.accelerometer.y,
+                "z": item.agent_data.accelerometer.z,
+                "latitude": item.agent_data.gps.latitude,
+                "longitude": item.agent_data.gps.longitude,
+                "timestamp": item.agent_data.timestamp,
+            })
+
+        result = db.execute(processed_agent_data.insert().returning(processed_agent_data), new_rows)
+        db.commit()
+
+        return result.mappings().all()
+    finally:
+        db.close()
+
 
 def get_data_by_id(data_id: int):
     db = SessionLocal()
