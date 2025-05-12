@@ -48,34 +48,38 @@ class Datasource:
     async def connect_to_server(self):
         uri = f"ws://{STORE_HOST}:{STORE_PORT}/ws/{self.user_id}"
         while True:
-            Logger.debug("CONNECT TO SERVER")
-            async with websockets.connect(uri) as websocket:
-                self.connection_status = "Connected"
-                try:
+            try:
+                Logger.debug(f"Connecting to {uri}")
+                async with websockets.connect(uri) as websocket:
+                    self.connection_status = "Connected"
+                    Logger.info("WebSocket connected")
                     while True:
                         data = await websocket.recv()
-                        parsed_data = json.loads(data)
-                        self.handle_received_data(parsed_data)
-                except websockets.ConnectionClosedOK:
-                    self.connection_status = "Disconnected"
-                    Logger.debug("SERVER DISCONNECT")
+                        self.handle_received_data(data)
+            except websockets.ConnectionClosed:
+                self.connection_status = "Disconnected"
+                Logger.warning("WebSocket connection closed. Reconnecting...")
+                await asyncio.sleep(5)
+            except Exception as e:
+                Logger.error(f"WebSocket error: {e}")
+                await asyncio.sleep(5)
 
     def handle_received_data(self, data):
-        # Update your UI or perform actions with received data here
-        Logger.debug(f"Received data: {data}")
-        processed_agent_data_list = sorted(
-            [
-                ProcessedAgentData(**processed_data_json)
-                for processed_data_json in json.loads(data)
-            ],
-            key=lambda v: v.timestamp,
-        )
-        new_points = [
-            (
-                processed_agent_data.latitude,
-                processed_agent_data.longitude,
-                processed_agent_data.road_state,
+        Logger.debug(f"Received raw data: {data}")
+        try:
+            parsed_data = json.loads(data)
+            processed_agent_data_list = sorted(
+                [ProcessedAgentData(**item) for item in parsed_data],
+                key=lambda v: v.timestamp
             )
-            for processed_agent_data in processed_agent_data_list
-        ]
-        self._new_points.extend(new_points)
+            new_points = [
+                (
+                    item.latitude,
+                    item.longitude,
+                    item.road_state
+                )
+                for item in processed_agent_data_list
+            ]
+            self._new_points.extend(new_points)
+        except Exception as e:
+            Logger.error(f"Error while processing data: {e}")

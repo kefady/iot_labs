@@ -1,3 +1,5 @@
+import logging
+
 from kivy_garden.mapview import MapLayer, MapMarker
 from kivy.graphics import Color, Line
 from kivy.graphics.context_instructions import Translate, Scale, PushMatrix, PopMatrix
@@ -53,6 +55,12 @@ class LineMapLayer(MapLayer):
         return self._line_points_offset
 
     def calc_line_points(self):
+        if not self.coordinates:
+            logging.warning("calc_line_points: coordinates list is empty.")
+            self._line_points_offset = (0, 0)
+            self._line_points = []
+            return
+
         # Offset all points by the coordinates of the first point,
         # to keep coordinates closer to zero.
         # (and therefore avoid some float precision issues when drawing lines)

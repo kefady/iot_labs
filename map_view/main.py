@@ -32,7 +32,7 @@ class MapViewApp(App):
         if not new_points:
             return
 
-        for latitude, longitude, road_state, air, noise in new_points:
+        for latitude, longitude, road_state in new_points:
             if self.car_marker is None:
                 self.car_marker = MapMarker(lat=latitude, lon=longitude, source="images/car.png")
                 self.mapview.add_marker(self.car_marker)
@@ -82,7 +82,7 @@ class MapViewApp(App):
         Ініціалізує мапу MapView(zoom, lat, lon)
         :return: мапу
         """
-        self.mapview = MapView(zoom=15)
+        self.mapview = MapView(zoom=20)
         return self.mapview
 
 
