@@ -3,6 +3,7 @@ from typing import List
 from app.models.schemas import ProcessedAgentData, ProcessedAgentDataInDB
 from app.crud import processed_data as crud
 from app.services.websocket_manager import send_data_to_subscribers
+from collections import defaultdict
 
 router = APIRouter(tags=["Processed Agent Data"])
 
@@ -17,8 +18,14 @@ router = APIRouter(tags=["Processed Agent Data"])
 )
 async def create_data(data: List[ProcessedAgentData]):
     created = crud.create_data_batch(data)
+
+    user_data_map = defaultdict(list)
     for item in created:
-        await send_data_to_subscribers(item["user_id"], item)
+        user_data_map[item["user_id"]].append(item)
+
+    for user_id, items in user_data_map.items():
+        await send_data_to_subscribers(user_id, items)
+
     return created
 
 @router.get(
